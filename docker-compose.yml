@@ -1,0 +1,43 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: flashrank-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - flashrank-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flashrank-api
+    ports:
+      - "${API_PORT:-3000}:${API_PORT:-3000}"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - flashrank-net
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT:-3000}/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+networks:
+  flashrank-net:
+    driver: bridge
