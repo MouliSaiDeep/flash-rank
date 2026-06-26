@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlashRank ⚡ Live Quiz Game & Leaderboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR: Live Activities & Active Sessions (Admin View) -->
+    <aside class="left-sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-flash">Flash</span><span class="logo-rank">Rank</span><span class="logo-icon">⚡</span>
+        </div>
+        <div class="online-indicator">
+          <span class="pulse-dot"></span>
+          <span id="active-players-count">SSE Live Connected</span>
+        </div>
+      </div>
+      
+      <!-- Live Event Ticker (Chat-like feed) -->
+      <div class="sidebar-section">
+        <h3><i class="fa-solid fa-satellite-dish"></i> Live Activity Feed</h3>
+        <div class="feed-container" id="events-feed">
+          <div class="feed-placeholder">Listening for real-time events...</div>
+        </div>
+      </div>
+
+      <!-- Admin Session Lookup & Revocation Panel -->
+      <div class="sidebar-section admin-section">
+        <h3><i class="fa-solid fa-user-shield"></i> Session Manager (Admin)</h3>
+        <div class="admin-lookup-form">
+          <input type="text" id="admin-user-id" placeholder="Enter UserId...">
+          <button id="admin-lookup-btn" class="btn-glow-cyan"><i class="fa-solid fa-search"></i></button>
+        </div>
+        <div class="admin-sessions-list" id="admin-sessions-result">
+          <div class="list-placeholder">Search for a user to manage their active sessions</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN APP DASHBOARD -->
+    <main class="main-content">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="top-nav">
+        <!-- Live Game Round Header Info -->
+        <div class="game-status-header">
+          <div class="timer-container" id="global-timer-container">
+            <span class="timer-label"><i class="fa-solid fa-stopwatch"></i> Active Round:</span>
+            <span class="timer-value" id="current-active-round">None Active</span>
+            <div class="progress-bar-bg" id="timer-progress-bar-bg">
+              <div class="progress-bar-fill" id="timer-progress-fill"></div>
+            </div>
+            <span class="timer-countdown" id="timer-countdown-val">00:00</span>
+          </div>
+        </div>
+
+        <!-- User Profile widget / Login modal triggers -->
+        <div class="user-profile-widget" id="user-profile-panel">
+          <div class="guest-widget" id="guest-widget-view">
+            <button class="btn btn-primary" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Create Session</button>
+          </div>
+          <div class="profile-widget hidden" id="profile-widget-view">
+            <div class="profile-avatar">
+              <svg width="40" height="40" viewBox="0 0 100 100" class="avatar-svg"></svg>
+            </div>
+            <div class="profile-details">
+              <span class="profile-name" id="my-profile-name">Guest</span>
+              <span class="profile-meta" id="my-profile-meta">Unknown Device</span>
+            </div>
+            <button class="btn-logout" onclick="logoutSession()" title="Logout / Destroy Session">
+              <i class="fa-solid fa-power-off"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- LEADERBOARD TOP-3 PODIUM CARDS -->
+      <section class="podium-section">
+        <h2 class="section-title"><i class="fa-solid fa-trophy text-gold"></i> Current Week TOP-3</h2>
+        <div class="podium-grid">
+          
+          <!-- 2nd Place Card -->
+          <div class="podium-card place-2nd" id="card-rank-2">
+            <div class="podium-rank-badge">2</div>
+            <div class="podium-avatar">
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
+            </div>
+            <h3 class="podium-name">Marvin71</h3>
+            <div class="podium-stats">
+              <span class="stat-label">Score</span>
+              <span class="stat-value">--</span>
+            </div>
+            <div class="podium-medal silver"><i class="fa-solid fa-award"></i> 2nd Place</div>
+          </div>
+
+          <!-- 1st Place Card -->
+          <div class="podium-card place-1st" id="card-rank-1">
+            <div class="podium-rank-badge">1</div>
+            <div class="podium-avatar">
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
+            </div>
+            <h3 class="podium-name">BornXs</h3>
+            <div class="podium-stats">
+              <span class="stat-label">Score</span>
+              <span class="stat-value">--</span>
+            </div>
+            <div class="podium-medal gold"><i class="fa-solid fa-crown"></i> Champion</div>
+          </div>
+
+          <!-- 3rd Place Card -->
+          <div class="podium-card place-3rd" id="card-rank-3">
+            <div class="podium-rank-badge">3</div>
+            <div class="podium-avatar">
+              <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
+            </div>
+            <h3 class="podium-name">Alex</h3>
+            <div class="podium-stats">
+              <span class="stat-label">Score</span>
+              <span class="stat-value">--</span>
+            </div>
+            <div class="podium-medal bronze"><i class="fa-solid fa-award"></i> 3rd Place</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- LEADERBOARD TABLE (TOP N) -->
+      <section class="leaderboard-table-section">
+        <h2 class="section-title">
+          <span><i class="fa-solid fa-list-ol text-cyan"></i> Leaderboard Standings</span>
+          <div class="top-n-selector">
+            <label for="leaderboard-limit">Show Top:</label>
+            <select id="leaderboard-limit">
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </h2>
+        <div class="table-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th width="80">Place</th>
+                <th>Player</th>
+                <th width="150" class="text-right">Score (Points)</th>
+                <th width="120" class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-rows">
+              <tr>
+                <td colspan="4" class="text-center">Loading players...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CONTROL PANEL / QUICK ACTIONS GRID -->
+      <section class="control-panel-section">
+        <h2 class="section-title"><i class="fa-solid fa-sliders text-gold"></i> Live Game Actions</h2>
+        
+        <div class="control-grid">
+          
+          <!-- Submit Quiz Answer -->
+          <div class="control-card">
+            <h3><i class="fa-solid fa-reply"></i> Submit Answer</h3>
+            <div class="control-body">
+              <div class="input-group">
+                <label for="submit-player-id">Player ID</label>
+                <input type="text" id="submit-player-id" placeholder="Your PlayerId...">
+              </div>
+              <div class="input-group">
+                <label for="submit-answer">Answer</label>
+                <input type="text" id="submit-answer" placeholder="Enter answer...">
+              </div>
+              <div class="current-round-hint" id="active-round-hint-text">
+                No active round to submit to
+              </div>
+              <button class="btn btn-block btn-primary btn-glow" id="btn-submit-answer" disabled>Submit Answer</button>
+              <div class="action-feedback hidden" id="submit-feedback"></div>
+            </div>
+          </div>
+
+          <!-- Seed Game Round (Admin Tool) -->
+          <div class="control-card">
+            <h3><i class="fa-solid fa-seedling"></i> Round Controller (Admin)</h3>
+            <div class="control-body">
+              <div class="input-group-row">
+                <div class="input-group">
+                  <label for="seed-game-id">Game ID</label>
+                  <input type="text" id="seed-game-id" value="g1">
+                </div>
+                <div class="input-group">
+                  <label for="seed-round-id">Round ID</label>
+                  <input type="text" id="seed-round-id" placeholder="r1">
+                </div>
+              </div>
+              <div class="input-group-row">
+                <div class="input-group">
+                  <label for="seed-correct">Answer</label>
+                  <input type="text" id="seed-correct" placeholder="e.g. Paris">
+                </div>
+                <div class="input-group">
+                  <label for="seed-points">Points</label>
+                  <input type="number" id="seed-points" value="50">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="seed-duration">Duration (Seconds)</label>
+                <input type="number" id="seed-duration" value="60">
+              </div>
+              <button class="btn btn-block btn-secondary btn-glow" id="btn-seed-round">Seed New Round</button>
+              <div class="action-feedback hidden" id="seed-feedback"></div>
+            </div>
+          </div>
+
+          <!-- Increment Player Score Card -->
+          <div class="control-card">
+            <h3><i class="fa-solid fa-arrow-up-right-dots"></i> Increment Score</h3>
+            <div class="control-body">
+              <div class="input-group">
+                <label for="inc-player-id">Player ID</label>
+                <input type="text" id="inc-player-id" placeholder="Enter PlayerId...">
+              </div>
+              <div class="input-group">
+                <label for="inc-points">Points to Add</label>
+                <input type="number" id="inc-points" value="10">
+              </div>
+              <button class="btn btn-block btn-primary btn-glow" id="btn-increment-score">Increment Score</button>
+              <div class="action-feedback hidden" id="inc-feedback"></div>
+            </div>
+          </div>
+
+          <!-- Player Rank & Percentile Lookup -->
+          <div class="control-card" id="stats-lookup-card">
+            <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Stats Lookup</h3>
+            <div class="control-body">
+              <div class="search-controls">
+                <div class="input-group">
+                  <label for="lookup-player-id">Player ID</label>
+                  <input type="text" id="lookup-player-id" placeholder="Enter PlayerId to analyze...">
+                </div>
+                <button class="btn btn-block btn-accent btn-glow" id="btn-lookup-player">Search Player Stats</button>
+              </div>
+              
+              <!-- Lookup Results Panel -->
+              <div class="lookup-results-panel hidden" id="lookup-results">
+                <div class="results-main">
+                  <div class="result-metric">
+                    <span class="label">Rank</span>
+                    <span class="val" id="res-rank">--</span>
+                  </div>
+                  <div class="result-metric">
+                    <span class="label">Score</span>
+                    <span class="val text-gold" id="res-score">--</span>
+                  </div>
+                  <div class="result-metric">
+                    <span class="label">Percentile</span>
+                    <span class="val text-cyan" id="res-percentile">--%</span>
+                  </div>
+                </div>
+                
+                <div class="nearby-section">
+                  <h4><i class="fa-solid fa-arrows-up-down"></i> Competition Ring</h4>
+                  <div class="nearby-list" id="res-nearby-above"></div>
+                  <div class="nearby-current" id="res-nearby-current"></div>
+                  <div class="nearby-list" id="res-nearby-below"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="app-footer">
+        <p>&copy; 2026 FlashRank Competitive System. Powered by Redis Hashes, Sets, Sorted Sets, Pub/Sub, and Server-Sent Events.</p>
+      </footer>
+    </main>
+  </div>
+
+  <!-- LOGIN/SESSION CREATION DIALOG MODAL -->
+  <div class="modal-backdrop hidden" id="login-modal">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-user-plus text-cyan"></i> Initialize Active Session</h2>
+        <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">Creating a session invalidates all your other active sessions atomically via our Redis Lua script.</p>
+        
+        <div class="input-group">
+          <label for="sess-user-id">User ID (or Username)</label>
+          <input type="text" id="sess-user-id" placeholder="e.g. player-123">
+        </div>
+        <div class="input-group-row">
+          <div class="input-group">
+            <label for="sess-ip">IP Address</label>
+            <input type="text" id="sess-ip" value="127.0.0.1">
+          </div>
+          <div class="input-group">
+            <label for="sess-device">Device Type</label>
+            <select id="sess-device">
+              <option value="desktop">🖥️ Desktop</option>
+              <option value="mobile">📱 Mobile</option>
+              <option value="tablet">📟 Tablet</option>
+            </select>
+          </div>
+        </div>
+        
+        <button class="btn btn-block btn-primary btn-glow mt-4" id="btn-create-session-submit">Establish Session</button>
+        <div class="action-feedback hidden" id="sess-modal-feedback"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
